@@ -6,7 +6,7 @@ import com.example.drones.entity.Drone;
 import com.example.drones.entity.Medication;
 import com.example.drones.enums.DroneStatus;
 import com.example.drones.exceptions.GenericErrorException;
-import com.example.drones.repository.IDroneRepository;
+import com.example.drones.service.IDroneService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,14 +18,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/drone")
 public class DroneController {
 
     @Autowired
-    IDroneRepository droneRepository;
+    IDroneService droneService;
 
     /**
      * @implNote registering a drone
@@ -47,7 +46,12 @@ public class DroneController {
                 throw new GenericErrorException("Drone cannot be in LOADING status if the battery level is below 25%",
                         Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
             }
-            return new ResponseEntity<>(droneRepository.save(drone), HttpStatus.CREATED);
+            if(droneService.existDroneBySerialNumber(drone.getSerialNumber())){
+                throw new GenericErrorException("There is a Drone with that serial number",
+                        Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
+            }
+            //todo validate items duplicados medications
+            return new ResponseEntity<>(droneService.save(drone), HttpStatus.CREATED);
         }catch (GenericErrorException e){
             Logger.getLogger(DroneController.class.getName()).log(Level.WARNING, e.getMessage());
             ResultDataResDto resultDataResDto = new ResultDataResDto();
@@ -67,7 +71,7 @@ public class DroneController {
     @GetMapping("/")
     public ResponseEntity<List<Drone>> getAllDrones(){
         try{
-            return new ResponseEntity<>(droneRepository.findAll(), HttpStatus.OK);
+            return new ResponseEntity<>(droneService.findAll(), HttpStatus.OK);
         }catch (Exception e){
             Logger.getLogger(DroneController.class.getName()).log(Level.SEVERE, e.getMessage());
             return  new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -84,7 +88,7 @@ public class DroneController {
     public ResponseEntity<Object> loadMedicationItems(@Valid @RequestBody List<Medication> medicationItems, @PathVariable Long idDrone){
 
         try{
-            Optional droneOptional = droneRepository.findById(idDrone);
+            Optional droneOptional = droneService.findById(idDrone);
             if(droneOptional.isPresent()){
                 Drone drone = (Drone) droneOptional.get();
                 double weightFull = 0D;
@@ -97,7 +101,7 @@ public class DroneController {
                 }
                 drone.setMedicationList(medicationItems);
 
-                return new ResponseEntity<>(droneRepository.save(drone), HttpStatus.OK);
+                return new ResponseEntity<>(droneService.save(drone), HttpStatus.OK);
             }
             throw new GenericErrorException("Drone Id no found",
                     Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
@@ -124,7 +128,7 @@ public class DroneController {
     @GetMapping("/{idDrone}/medications")
     public ResponseEntity<Object> getAllMedicationItemsByIdDrone(@PathVariable Long idDrone){
         try{
-            Optional droneOptional = droneRepository.findById(idDrone);
+            Optional droneOptional = droneService.findById(idDrone);
             if(droneOptional.isPresent()){
                 Drone drone = (Drone) droneOptional.get();
                 return new ResponseEntity<>(drone.getMedicationList(), HttpStatus.OK);
@@ -150,7 +154,7 @@ public class DroneController {
     @GetMapping("/available")
     public ResponseEntity<List<Drone>> getAllDronesAvailable(){
         try{
-            List<Drone> droneList = droneRepository.findAll().stream().filter(drone-> drone.getDroneStatus().equals(DroneStatus.IDLE)).collect(Collectors.toList());
+            List<Drone> droneList = droneService.findAllAvailable();
             return new ResponseEntity<>(droneList, HttpStatus.OK);
         }catch (Exception e){
             Logger.getLogger(DroneController.class.getName()).log(Level.SEVERE, e.getMessage());
@@ -166,7 +170,7 @@ public class DroneController {
     @GetMapping("/{idDrone}/batterylevel")
     public ResponseEntity<Object> getBatteryLevelByIdDrone(@PathVariable Long idDrone){
         try{
-            Optional droneOptional = droneRepository.findById(idDrone);
+            Optional droneOptional = droneService.findById(idDrone);
             if(droneOptional.isPresent()){
                 Drone drone = (Drone) droneOptional.get();
                 HashMap<String, Integer> batteryLevel = new HashMap<>();

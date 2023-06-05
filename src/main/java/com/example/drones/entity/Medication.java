@@ -1,5 +1,6 @@
 package com.example.drones.entity;
 
+import com.example.drones.util.IsBase64;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -35,7 +36,8 @@ public class Medication implements Serializable {
     @Pattern(regexp = "^[A-Z0-9_]+$", message = "value not valid, allowed only upper case letters, underscore and numbers")
     private String code;
 
-    @Size(max = 5120)
+    @Size(max = 5120, message = "Value not valid, in image field only 5120 characters are allowed")
+    @IsBase64
     private String image;
 
 }
