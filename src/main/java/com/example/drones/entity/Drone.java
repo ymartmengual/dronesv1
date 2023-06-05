@@ -17,7 +17,6 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.List;
 
 @Entity

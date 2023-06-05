@@ -8,14 +8,12 @@ import com.example.drones.enums.DroneStatus;
 import com.example.drones.exceptions.GenericErrorException;
 import com.example.drones.repository.IDroneRepository;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -29,6 +27,11 @@ public class DroneController {
     @Autowired
     IDroneRepository droneRepository;
 
+    /**
+     * @implNote registering a drone
+     * @param drone information structure to create drone with medication items
+     * @return
+     */
     @PostMapping("/create")
     public ResponseEntity<Object> save(@Valid @RequestBody Drone drone){
         try{
@@ -38,6 +41,10 @@ public class DroneController {
             }
             if(drone.getWeightLimit() > 500 || weightFull > drone.getWeightLimit()){
                 throw new GenericErrorException("Drone charge limit exceeded",
+                        Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
+            }
+            if(drone.getDroneStatus().equals(DroneStatus.LOADING) && drone.getBattery() < 25){
+                throw new GenericErrorException("Drone cannot be in LOADING status if the battery level is below 25%",
                         Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
             }
             return new ResponseEntity<>(droneRepository.save(drone), HttpStatus.CREATED);
@@ -53,6 +60,10 @@ public class DroneController {
         }
     }
 
+    /**
+     * @implNote List all Drones
+     * @return
+     */
     @GetMapping("/")
     public ResponseEntity<List<Drone>> getAllDrones(){
         try{
@@ -63,12 +74,17 @@ public class DroneController {
         }
     }
 
-
-    @PostMapping("/{id}/updatemedicationlist")
-    public ResponseEntity<Object> loadMedicationItems(@Valid @RequestBody List<Medication> medicationItems, @PathVariable Long id){
+    /**
+     * @implNote loading a drone with medication items;
+     * @param medicationItems
+     * @param idDrone
+     * @return
+     */
+    @PostMapping("/{idDrone}/updatemedicationitems")
+    public ResponseEntity<Object> loadMedicationItems(@Valid @RequestBody List<Medication> medicationItems, @PathVariable Long idDrone){
 
         try{
-            Optional droneOptional = droneRepository.findById(id);
+            Optional droneOptional = droneRepository.findById(idDrone);
             if(droneOptional.isPresent()){
                 Drone drone = (Drone) droneOptional.get();
                 double weightFull = 0D;
@@ -100,6 +116,11 @@ public class DroneController {
         }
     }
 
+    /**
+     * @implNote checking loaded medication items for a given drone;
+     * @param idDrone
+     * @return
+     */
     @GetMapping("/{idDrone}/medications")
     public ResponseEntity<Object> getAllMedicationItemsByIdDrone(@PathVariable Long idDrone){
         try{
@@ -122,6 +143,10 @@ public class DroneController {
         }
     }
 
+    /**
+     * @implNote checking available drones for loading
+     * @return
+     */
     @GetMapping("/available")
     public ResponseEntity<List<Drone>> getAllDronesAvailable(){
         try{
@@ -133,6 +158,43 @@ public class DroneController {
         }
     }
 
+    /**
+     * @implNote check drone battery level for a given drone
+     * @param idDrone
+     * @return
+     */
+    @GetMapping("/{idDrone}/batterylevel")
+    public ResponseEntity<Object> getBatteryLevelByIdDrone(@PathVariable Long idDrone){
+        try{
+            Optional droneOptional = droneRepository.findById(idDrone);
+            if(droneOptional.isPresent()){
+                Drone drone = (Drone) droneOptional.get();
+                HashMap<String, Integer> batteryLevel = new HashMap<>();
+                batteryLevel.put("batteryLevel", drone.getBattery());
+                return new ResponseEntity<>(batteryLevel, HttpStatus.OK);
+            }
+            throw new GenericErrorException("Drone Id no found",
+                    Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
+        }catch (GenericErrorException e){
+            Logger.getLogger(DroneController.class.getName()).log(Level.WARNING, e.getMessage());
+            ResultDataResDto resultDataResDto = new ResultDataResDto();
+            responseDto(resultDataResDto, e.getCodeError(),
+                    e.getMessage(), e.getNameCodeError(), DroneController.class.getName());
+            return new ResponseEntity<>(resultDataResDto, HttpStatus.BAD_REQUEST);
+        }catch (Exception e){
+            Logger.getLogger(DroneController.class.getName()).log(Level.SEVERE, e.getMessage());
+            return  new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @implNote aux function generic for response
+     * @param resultData
+     * @param codeResponse
+     * @param descriptionResponse
+     * @param nameCodeResult
+     * @param source
+     */
     public static void responseDto(ResultDataResDto resultData, String codeResponse, String descriptionResponse, String nameCodeResult, String source){
         resultData.setCode(codeResponse);
         resultData.setName(nameCodeResult);
