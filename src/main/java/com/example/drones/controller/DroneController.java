@@ -52,8 +52,11 @@ public class DroneController {
                         throw new GenericErrorException("You are trying to create a Medication with a name and code that already exists in the database, add the corresponding idMedication parameter to the structure",
                                 Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
                     }
-                }else{
+                }else if(!medicationService.existMedicationByCodeAndName(medicationItem.getName(), medicationItem.getCode())){
                     medicationList.add(medicationService.save(medicationItem));
+                }else{
+                    throw new GenericErrorException("You are trying to create a Medication with a name and code that already exists in the database, add the corresponding idMedication parameter to the structure",
+                            Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
                 }
                 weightFull += medicationItem.getWeight();
             }
@@ -111,14 +114,31 @@ public class DroneController {
             if(droneOptional.isPresent()){
                 Drone drone = (Drone) droneOptional.get();
                 double weightFull = 0D;
+                List<Medication> medicationList = new ArrayList<>();
                 for (Medication medicationItem : medicationItems) {
+                    if(medicationItem.getIdMedication() != null){
+                        Medication medication = medicationService.findById(medicationItem.getIdMedication());
+                        if (medication != null){
+                            medicationList.add(medication);
+                        }else if(!medicationService.existMedicationByCodeAndName(medicationItem.getName(), medicationItem.getCode())){
+                            medicationList.add(medicationService.save(medicationItem));
+                        }else{
+                            throw new GenericErrorException("You are trying to create a Medication with a name and code that already exists in the database, add the corresponding idMedication parameter to the structure",
+                                    Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
+                        }
+                    }else if(!medicationService.existMedicationByCodeAndName(medicationItem.getName(), medicationItem.getCode())){
+                        medicationList.add(medicationService.save(medicationItem));
+                    }else{
+                        throw new GenericErrorException("You are trying to create a Medication with a name and code that already exists in the database, add the corresponding idMedication parameter to the structure",
+                                Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
+                    }
                     weightFull += medicationItem.getWeight();
                 }
                 if(weightFull > drone.getWeightLimit()){
                     throw new GenericErrorException("Drone charge limit exceeded",
                             Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
                 }
-                drone.setMedicationList(medicationItems);
+                drone.setMedicationList(medicationList);
 
                 return new ResponseEntity<>(droneService.save(drone), HttpStatus.OK);
             }
