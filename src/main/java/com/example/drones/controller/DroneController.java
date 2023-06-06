@@ -96,7 +96,7 @@ public class DroneController {
             return new ResponseEntity<>(droneService.findAll(), HttpStatus.OK);
         }catch (Exception e){
             Logger.getLogger(DroneController.class.getName()).log(Level.SEVERE, e.getMessage());
-            return  new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return  new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -182,7 +182,7 @@ public class DroneController {
             return new ResponseEntity<>(resultDataResDto, HttpStatus.BAD_REQUEST);
         }catch (Exception e){
             Logger.getLogger(DroneController.class.getName()).log(Level.SEVERE, e.getMessage());
-            return  new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return  new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -197,7 +197,7 @@ public class DroneController {
             return new ResponseEntity<>(droneList, HttpStatus.OK);
         }catch (Exception e){
             Logger.getLogger(DroneController.class.getName()).log(Level.SEVERE, e.getMessage());
-            return  new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return  new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -226,7 +226,7 @@ public class DroneController {
             return new ResponseEntity<>(resultDataResDto, HttpStatus.BAD_REQUEST);
         }catch (Exception e){
             Logger.getLogger(DroneController.class.getName()).log(Level.SEVERE, e.getMessage());
-            return  new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return  new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
