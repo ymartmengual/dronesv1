@@ -1,12 +1,10 @@
-package com.example.drones.service;
+package com.example.drones.services;
 
 import com.example.drones.entity.Drone;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public interface IDroneService {
 
     boolean existDroneBySerialNumber(String serialNumber);

@@ -6,13 +6,15 @@ import com.example.drones.entity.Drone;
 import com.example.drones.entity.Medication;
 import com.example.drones.enums.DroneStatus;
 import com.example.drones.exceptions.GenericErrorException;
-import com.example.drones.service.IDroneService;
+import com.example.drones.services.IDroneService;
+import com.example.drones.services.IMedicationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,10 @@ import java.util.logging.Logger;
 public class DroneController {
 
     @Autowired
-    IDroneService droneService;
+    private IDroneService droneService;
+
+    @Autowired
+    private IMedicationService medicationService;
 
     /**
      * @implNote registering a drone
@@ -35,7 +40,21 @@ public class DroneController {
     public ResponseEntity<Object> save(@Valid @RequestBody Drone drone){
         try{
             double weightFull = 0D;
+            List<Medication> medicationList = new ArrayList<>();
             for (Medication medicationItem : drone.getMedicationList()) {
+                if(medicationItem.getIdMedication() != null){
+                    Medication medication = medicationService.findById(medicationItem.getIdMedication());
+                    if (medication != null){
+                        medicationList.add(medication);
+                    }else if(!medicationService.existMedicationByCodeAndName(medicationItem.getName(), medicationItem.getCode())){
+                        medicationList.add(medicationService.save(medicationItem));
+                    }else{
+                        throw new GenericErrorException("You are trying to create a Medication with a name and code that already exists in the database, add the corresponding idMedication parameter to the structure",
+                                Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
+                    }
+                }else{
+                    medicationList.add(medicationService.save(medicationItem));
+                }
                 weightFull += medicationItem.getWeight();
             }
             if(drone.getWeightLimit() > 500 || weightFull > drone.getWeightLimit()){
@@ -50,7 +69,7 @@ public class DroneController {
                 throw new GenericErrorException("There is a Drone with that serial number",
                         Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID, Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID);
             }
-            //todo validate items duplicados medications
+            drone.setMedicationList(medicationList);
             return new ResponseEntity<>(droneService.save(drone), HttpStatus.CREATED);
         }catch (GenericErrorException e){
             Logger.getLogger(DroneController.class.getName()).log(Level.WARNING, e.getMessage());

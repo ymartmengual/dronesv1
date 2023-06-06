@@ -1,19 +1,21 @@
-package com.example.drones.service.impl;
+package com.example.drones.services.impl;
 
 import com.example.drones.entity.Drone;
 import com.example.drones.enums.DroneStatus;
 import com.example.drones.repository.IDroneRepository;
-import com.example.drones.service.IDroneService;
+import com.example.drones.services.IDroneService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Service
 public class DroneServiceImpl implements IDroneService {
 
     @Autowired
-    IDroneRepository droneRepository;
+    private IDroneRepository droneRepository;
 
     @Override
     public boolean existDroneBySerialNumber(String serialNumber) {
