@@ -10,6 +10,10 @@
 H2 database is an open source, embedded and in memory relational database management system. 
 It is written in Java and provides a client/server application. It stores data in system memory instead of disk.
 
+Open: http://localhost:8080/h2-console/
+user: drone
+password: drone
+
 # Getting Started
 
 #### How to compile the program
@@ -188,7 +192,9 @@ It is written in Java and provides a client/server application. It stores data i
   "batteryLevel": 45
   }
 
-##### Request  
+##### Periodic task every 10 seconds
+* Save history log on Audit table.
+ 
 ### Reference Documentation
 
 For further reference, please consider the following sections:
