@@ -24,14 +24,15 @@ public class ValidationHandler extends ResponseEntityExceptionHandler {
         ObjectError err = null;
         for(ObjectError error: ex.getBindingResult().getAllErrors()){
             err = error;
-            break;
+            if(err != null)
+                break;
         }
         ResultDataResDto resultDataResDto = new ResultDataResDto();
         DroneController.responseDto(resultDataResDto,
                 Constante.CODE_RESPONSE_ARGUMENT_NOT_VALID,
-                err.getDefaultMessage(),
+                err != null ? err.getDefaultMessage() : DroneController.class.getName(),
                 Constante.NAME_CODE_RESPONSE_ARGUMENT_NOT_VALID,
-                err.getObjectName()+" "+((FieldError) err).getField());
+                err != null ? err.getObjectName()+" "+((FieldError) err).getField() : DroneController.class.getName());
 
         return new ResponseEntity<>(resultDataResDto, HttpStatus.BAD_REQUEST);
     }
