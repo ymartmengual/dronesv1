@@ -1,27 +1,25 @@
 # Read Me
 
-The following was discovered as part of building this project:
-
-* The JVM level was changed from '11' to '17', review
-  the [JDK Version Range](https://github.com/spring-projects/spring-framework/wiki/Spring-Framework-Versions#jdk-version-range)
-  on the wiki for more details.
-
 #### INFORMATION:
 * PROJECT'S NAME: DRONES
 * PRODUCED BY: YAMIL MARTINEZ MENGUAL
+* Spring boot version 3.1.0
+* Required JDK 17
 
 #### DATABASE INFORMATION:
 H2 database is an open source, embedded and in memory relational database management system. 
 It is written in Java and provides a client/server application. It stores data in system memory instead of disk.
+
 # Getting Started
-#### HOW TO COMPILE THE PROGRAM
-* IN THE ROOT FOLDER OF THE APPLICATION, RAISE A CONSOLE AND RUN mvn package
-  REQUIREMENT TO HAVE INSTALLED mvn package
-  OR WITH A PROGRAMMING IDE RUN THE PROGRAM
-Run Program
+
+#### How to compile the program
+* In the root folder of the application, raise a console and run “mvn package”,
+  requirement to have installed Maven or with a programming IDE run the program.
 
 
+####  Run Program
 * java -jar drone.jar --server.port=8080.
+
 ####  Create Drone:
   URL endpoint local server: http://localhost:8080/api/drone/create
 * Method: POST
@@ -108,9 +106,10 @@ Run Program
 * Method: POST
 * Request example: [
   {
-  "name": "EllR_S8",
-  "weight": 10,
-  "code": "LKI_26",
+  "idMedication": 2,
+  "name": "TBwH34",
+  "weight": 50.0,
+  "code": "TB_69",
   "image": ""
   }
   ]
